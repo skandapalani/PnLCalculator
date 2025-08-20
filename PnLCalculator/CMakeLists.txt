@@ -3,10 +3,26 @@
 #
 
 # Add source to this project's executable.
-add_executable (PnLCalculator "PnLCalculator.cpp" "PnLCalculator.h")
+cmake_minimum_required(VERSION 3.10)
+project(PnLCalculator)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET PnLCalculator PROPERTY CXX_STANDARD 20)
-endif()
+# Use C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Source files
+set(SOURCES
+    src/main.cpp
+    src/PnLCalculator.cpp
+)
+
+# Create executable
+add_executable(PnLCalculator ${SOURCES})
+
+# Use C++17 specifically for this target
+target_compile_features(PnLCalculator PRIVATE cxx_std_17)
+
+# Include directories for this target only
+target_include_directories(PnLCalculator PRIVATE include)
 
 # TODO: Add tests and install targets if needed.
