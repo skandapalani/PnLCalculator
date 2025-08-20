@@ -34,18 +34,29 @@ double PnLCalculator::processTrade(const Event& e, std::deque<Trade>& openPositi
     int remaining = e.quantity;
 
     while (remaining > 0) {
-        if (openPositions.empty()) break;
+        if (openPositions.empty())
+        {
+            break;
+        }
         Trade& op = fifo ? openPositions.front() : openPositions.back();
         int matchedQty = std::min(remaining, op.quantity);
 
-        if (e.side == 'S') pnl += matchedQty * (e.price - op.price);
-        else pnl += matchedQty * (op.price - e.price);
+        if (e.side == 'S')
+        {
+            pnl += matchedQty * (e.price - op.price);
+        }
+        else
+        {
+            pnl += matchedQty * (op.price - e.price);
+        }
 
         remaining -= matchedQty;
         op.quantity -= matchedQty;
 
         if (op.quantity == 0)
+        {
             fifo ? openPositions.pop_front() : openPositions.pop_back();
+        }
     }
 
     return pnl;
@@ -59,11 +70,15 @@ void PnLCalculator::processTrades(const std::vector<Event>& events) {
         pnl = processTrade(e, openPos);
 
         if (pnl != 0.0)
-            std::cout << e.timestamp << "," << e.symbol << ","
-            << std::fixed << std::setprecision(2) << pnl << "\n";
-
+        {
+            std::cout << e.timestamp << "," << e.symbol << "," << std::fixed << std::setprecision(2) << pnl << "\n";
+        }
+            
         auto& storePos = (e.side == 'B') ? buyPositions[e.symbol] : sellPositions[e.symbol];
-        if (e.quantity > 0) storePos.push_back({ e.price, e.quantity });
+        if (e.quantity > 0)
+        {
+            storePos.push_back({ e.price, e.quantity });
+        }
     }
 }
 
