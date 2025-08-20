@@ -14,24 +14,24 @@ std::vector<Event> PnLCalculator::readTrades(const std::string& filename) {
     while (std::getline(infile, line)) {
         std::stringstream ss(line);
         std::string token;
-        Event e;
+        Event event;
         std::getline(ss, token, ','); 
-        e.timestamp = std::stoi(token);
-        std::getline(ss, e.symbol, ',');
+        event.timestamp = std::stoi(token);
+        std::getline(ss, event.symbol, ',');
         std::getline(ss, token, ','); 
-        e.side = token[0];
+        event.side = token[0];
         std::getline(ss, token, ','); 
-        e.price = std::stod(token);
+        event.price = std::stod(token);
         std::getline(ss, token, ','); 
-        e.quantity = std::stoi(token);
-        events.push_back(e);
+        event.quantity = std::stoi(token);
+        events.push_back(event);
     }
     return events;
 }
 
-double PnLCalculator::processTrade(const Event& e, std::deque<Trade>& openPositions) {
+double PnLCalculator::processTrade(const Event& event, std::deque<Trade>& openPositions) {
     double pnl = 0.0;
-    int remaining = e.quantity;
+    int remaining = event.quantity;
 
     while (remaining > 0) {
         if (openPositions.empty())
@@ -41,13 +41,13 @@ double PnLCalculator::processTrade(const Event& e, std::deque<Trade>& openPositi
         Trade& op = fifo ? openPositions.front() : openPositions.back();
         int matchedQty = std::min(remaining, op.quantity);
 
-        if (e.side == 'S')
+        if (event.side == 'S')
         {
-            pnl += matchedQty * (e.price - op.price);
+            pnl += matchedQty * (event.price - op.price);
         }
         else
         {
-            pnl += matchedQty * (op.price - e.price);
+            pnl += matchedQty * (op.price - event.price);
         }
 
         remaining -= matchedQty;
@@ -64,20 +64,20 @@ double PnLCalculator::processTrade(const Event& e, std::deque<Trade>& openPositi
 
 void PnLCalculator::processTrades(const std::vector<Event>& events) {
     std::cout << "timestamp,symbol,pnl\n";
-    for (const auto& e : events) {
+    for (const auto& event : events) {
         double pnl = 0.0;
-        auto& openPos = (e.side == 'S') ? buyPositions[e.symbol] : sellPositions[e.symbol];
-        pnl = processTrade(e, openPos);
+        auto& openPos = (event.side == 'S') ? buyPositions[event.symbol] : sellPositions[event.symbol];
+        pnl = processTrade(event, openPos);
 
         if (pnl != 0.0)
         {
-            std::cout << e.timestamp << "," << e.symbol << "," << std::fixed << std::setprecision(2) << pnl << "\n";
+            std::cout << event.timestamp << "," << event.symbol << "," << std::fixed << std::setprecision(2) << pnl << "\n";
         }
             
-        auto& storePos = (e.side == 'B') ? buyPositions[e.symbol] : sellPositions[e.symbol];
-        if (e.quantity > 0)
+        auto& storePos = (event.side == 'B') ? buyPositions[event.symbol] : sellPositions[event.symbol];
+        if (event.quantity > 0)
         {
-            storePos.push_back({ e.price, e.quantity });
+            storePos.push_back({ event.price, event.quantity });
         }
     }
 }
